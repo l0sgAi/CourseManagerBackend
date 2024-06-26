@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: CS_BACKEND
+  profiles:
+    active: dev

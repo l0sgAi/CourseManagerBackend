@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--xml方式写sql语句,namespace为mapper接口类的全限定名，这样实现对应-->
+<mapper namespace="com.losgai.cs.manager.mapper.StudentCourseMapper">
+
+    <sql id="courseCol">
+        id,name,credit,intro,course_time,course_location,num_limit,num,report,create_time,update_time,is_deleted
+    </sql>
+
+    <insert id="saveStudentCourseData">
+        INSERT INTO course_student
+        (course_id,
+         student_id,
+         grade,
+         create_time,
+         update_time,
+         is_deleted)
+        VALUES (#{courseId},
+                #{id},
+                null,
+                now(),
+                now(),
+                0)
+    </insert>
+
+    <update id="updateNumAdd">
+        UPDATE course
+        SET num = num + 1
+        WHERE id = #{courseId}
+    </update>
+
+    <update id="updateNumSub">
+        UPDATE course
+        SET num = num - 1
+        WHERE id = #{dataId}
+    </update>
+
+    <delete id="deleteStudentCourseByStudentId">
+        DELETE FROM course_student
+        WHERE student_id = #{id}
+          and course_id = #{dataId}
+    </delete>
+
+    <select id="findByPage" resultType="com.losgai.cs.manager.entity.Course">
+        SELECT c.*
+        FROM course c
+        INNER JOIN course_student cs
+        <where>
+            <if test="courseDataDto.name != null and courseDataDto.name != ''">
+                AND c.name like concat('%', #{courseDataDto.name}, '%' )
+            </if>
+
+            <if test="courseDataDto.createTimeBegin != null and courseDataDto.createTimeBegin != ''">
+                AND c.create_time &gt;=
+                #{courseDataDto.createTimeBegin}
+            </if>
+
+            <if test="courseDataDto.createTimeEnd != null and courseDataDto.createTimeEnd != ''">
+                AND c.create_time &lt;=
+                #{courseDataDto.createTimeEnd}
+            </if>
+            <if test="id != null">
+                AND cs.student_id = #{id}
+            </if>
+            AND c.is_deleted = 0
+            AND cs.is_deleted = 0
+            AND c.id = cs.course_id
+        </where>
+        GROUP BY c.id
+        ORDER BY c.update_time DESC
+    </select>
+
+    <select id="findPickedCourseByStudentId" resultType="com.losgai.cs.manager.entity.Course">
+        SELECT c.*
+        FROM course c
+        INNER JOIN course_student cs
+        <where>
+            <if test="id != null">
+                AND cs.student_id = #{id}
+            </if>
+            AND c.is_deleted = 0
+            AND cs.is_deleted = 0
+            AND c.id = cs.course_id
+        </where>
+        GROUP BY c.id
+        ORDER BY c.update_time DESC
+    </select>
+
+    <select id="findGradeByPage" resultType="com.losgai.cs.manager.entity.dto.StudentCourseGradeDto">
+        SELECT
+        c.id AS id,
+        c.name AS name,
+        c.credit AS credit,
+        c.course_time AS courseTime,
+        c.course_location AS courseLocation,
+        cs.grade AS grade
+        FROM course c
+        INNER JOIN course_student cs
+        <where>
+            <if test="courseDataDto.name != null and courseDataDto.name != ''">
+                AND c.name like concat('%', #{courseDataDto.name}, '%' )
+            </if>
+
+            <if test="courseDataDto.createTimeBegin != null and courseDataDto.createTimeBegin != ''">
+                AND c.create_time &gt;=
+                #{courseDataDto.createTimeBegin}
+            </if>
+
+            <if test="courseDataDto.createTimeEnd != null and courseDataDto.createTimeEnd != ''">
+                AND c.create_time &lt;=
+                #{courseDataDto.createTimeEnd}
+            </if>
+            <if test="id != null">
+                AND cs.student_id = #{id}
+            </if>
+            AND c.is_deleted = 0
+            AND cs.is_deleted = 0
+            AND c.id = cs.course_id
+        </where>
+        ORDER BY cs.create_time DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--xml方式写sql语句,namespace为mapper接口类的全限定名，这样实现对应-->
+<mapper namespace="com.losgai.cs.manager.mapper.TeacherMapper">
+
+    <resultMap id="financeMap" type="com.losgai.cs.manager.entity.Teacher" autoMapping="true"/>
+
+    <sql id="col">
+        id,name,password,avatar,sex,college,degree,title,email,phone,intro,create_time,update_time,is_deleted
+    </sql>
+
+    <update id="updatePassword">
+        update teacher set
+        <if test="password != null">
+            password = #{password}
+        </if>
+        where id = #{id}
+        and password = #{originalPassword}
+    </update>
+
+    <!--删除教师对应的课程关系  -->
+    <delete id="deleteCourseByTeacherId">
+        delete
+        from course_teacher
+        where teacher_id = #{teacherId}
+        and is_deleted = 0
+    </delete>
+
+    <insert id="save">
+        insert into teacher(name,
+                            password,
+                            avatar,
+                            sex,
+                            college,
+                            degree,
+                            title,
+                            email,
+                            phone,
+                            intro,
+                            create_time,
+                            update_time,
+                            is_deleted)
+        values (#{name},
+                #{password},
+                #{avatar},
+                #{sex},
+                #{college},
+                #{degree},
+                #{title},
+                #{email},
+                #{phone},
+                #{intro},
+                now(),
+                now(),
+                0)
+    </insert>
+
+    <update id="update">
+        update teacher set
+        <if test="name != null and name!=''">
+            name =#{name},
+        </if>
+        <if test="password != null and password!=''" >
+            password = #{password},
+        </if>
+        <if test="avatar != null and avatar!=''">
+            avatar = #{avatar},
+        </if>
+        <if test="sex != null">
+            sex = #{sex},
+        </if>
+        <if test="college != null and college!=''">
+            college= #{college},
+        </if>
+        <if test="degree != null and degree!=''">
+            degree= #{degree},
+        </if>
+        <if test="title != null and title!=''">
+            title= #{title},
+        </if>
+        email = #{email},
+        phone = #{phone},
+        intro = #{intro},
+        update_time = now()
+        where id = #{id}
+        and is_deleted = 0
+    </update>
+
+    <update id="deleteById">
+        update teacher set is_deleted = 1, update_time = now() where id = #{dataId}
+    </update>
+
+    <!--教师分配课程-->
+    <insert id="doAssign">
+        insert into course_teacher(
+        teacher_id,
+        course_id,
+        create_time,
+        update_time,
+        is_deleted)
+        values
+        <foreach collection="courseIdList" item="courseId" separator=",">
+            (#{teacherId},#{courseId},now(),now(),0)
+        </foreach>
+    </insert>
+
+    <select id="selectTeacherInfoByIdAndName" resultType="com.losgai.cs.manager.entity.Teacher">
+        select
+        <include refid="col"/>
+        from teacher
+        where id = #{id}
+        and name = #{name}
+        and is_deleted = 0
+    </select>
+
+    <select id="findAllByPage" resultType="com.losgai.cs.manager.entity.Teacher">
+        select <include refid="col"/>
+        from teacher
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%' )
+            </if>
+
+            <if test="createTimeBegin != null and createTimeBegin != ''">
+                and create_time &gt;=
+                #{createTimeBegin}
+            </if>
+
+            <if test="createTimeEnd != null and createTimeEnd != ''">
+                and create_time &lt;=
+                #{createTimeEnd}
+            </if>
+            and is_deleted = 0
+        </where>
+        order by id
+    </select>
+
+    <select id="findTeacherCourses" resultType="com.losgai.cs.manager.entity.Course">
+        SELECT c.* FROM course c
+        INNER JOIN course_teacher ct
+        WHERE c.id = ct.course_id
+        AND ct.teacher_id = #{teacherId}
+        GROUP BY c.id
+    </select>
+
+</mapper>

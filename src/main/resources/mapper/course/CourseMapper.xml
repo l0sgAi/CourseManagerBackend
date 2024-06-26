@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--xml方式写sql语句,namespace为mapper接口类的全限定名，这样实现对应-->
+<mapper namespace="com.losgai.cs.manager.mapper.CourseMapper">
+
+    <resultMap id="financeMap" type="com.losgai.cs.manager.entity.Course" autoMapping="true"/>
+
+    <sql id="col">
+        id,name,credit,intro,course_time,course_location,num_limit,num,report,create_time,update_time,is_deleted
+    </sql>
+
+    <sql id="reportCol">
+        id,name,credit,report,create_time,update_time,is_deleted
+    </sql>
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into course(name,
+                           credit,
+                           intro,
+                           course_time,
+                           course_location,
+                           num_limit,
+                           num,
+                           report,
+                           create_time,
+                           update_time,
+                           is_deleted)
+        values (#{name},
+                #{credit},
+                #{intro},
+                #{courseTime},
+                #{courseLocation},
+                #{numLimit},
+                0,
+                '这门课还没有通知',
+                now(),
+                now(),
+                0)
+    </insert>
+
+    <update id="update">
+        update course set
+        <if test="name != null and name!=''">
+            name =
+            #{name},
+        </if>
+        <if test="credit != null">
+            credit =
+            #{credit},
+        </if>
+        <if test="intro != null and intro!=''">
+            intro =
+            #{intro},
+        </if>
+        <if test="courseTime != null and courseTime!=''">
+            course_time =
+            #{courseTime},
+        </if>
+        <if test="courseLocation != null and courseLocation!=''">
+            course_location=
+            #{courseLocation},
+        </if>
+        <if test="numLimit != null">
+            num_limit =
+            #{numLimit},
+        </if>
+        report=#{report},
+        update_time = now()
+        where id = #{id}
+        and is_deleted = 0
+    </update>
+
+    <update id="deleteById">
+        update course set is_deleted = 1, update_time = now() where id = #{dataId}
+    </update>
+
+    <select id="findByPage" resultType="com.losgai.cs.manager.entity.Course">
+        select <include refid="reportCol"/>
+        from course
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%' )
+            </if>
+
+            <if test="createTimeBegin != null and createTimeBegin != ''">
+                and create_time &gt;=
+                #{createTimeBegin}
+            </if>
+
+            <if test="createTimeEnd != null and createTimeEnd != ''">
+                and create_time &lt;=
+                #{createTimeEnd}
+            </if>
+            and is_deleted = 0
+        </where>
+        order by update_time desc
+    </select>
+
+    <select id="findAllByPage" resultType="com.losgai.cs.manager.entity.Course">
+        select <include refid="col"/>
+        from course
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%' )
+            </if>
+
+            <if test="createTimeBegin != null and createTimeBegin != ''">
+                and create_time &gt;=
+                #{createTimeBegin}
+            </if>
+
+            <if test="createTimeEnd != null and createTimeEnd != ''">
+                and create_time &lt;=
+                #{createTimeEnd}
+            </if>
+            and is_deleted = 0
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="findAll" resultType="com.losgai.cs.manager.entity.Course">
+        select <include refid="col"/>
+        from course
+        where is_deleted = 0
+        order by create_time desc
+    </select>
+
+    <select id="getTopTenCourses" resultType="com.losgai.cs.manager.entity.dto.CourseNumDto">
+        SELECT c.name,COUNT(cs.course_id) AS num
+        FROM course c
+        INNER JOIN course_student cs
+        WHERE c.id = cs.course_id
+        AND c.is_deleted = 0
+        AND cs.is_deleted = 0
+        GROUP BY cs.course_id
+        ORDER BY COUNT(cs.course_id) DESC
+        LIMIT 10
+    </select>
+</mapper>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--xml方式写sql语句,namespace为mapper接口类的全限定名，这样实现对应-->
+<mapper namespace="com.losgai.cs.manager.mapper.StudentMapper">
+
+    <resultMap id="financeMap" type="com.losgai.cs.manager.entity.Student" autoMapping="true"/>
+
+    <sql id="col">
+        id,name,password,avatar,sex,college,major,student_class,create_time,update_time,is_deleted
+    </sql>
+
+    <update id="updatePassword">
+        update student set
+        <if test="password != null">
+            password = #{password}
+        </if>
+        where id = #{id}
+        and password = #{originalPassword}
+    </update>
+
+    <select id="selectStudentInfoByIdAndName" resultType="com.losgai.cs.manager.entity.Student">
+        select
+        <include refid="col"/>
+        from student
+        where id = #{id}
+        and name = #{name}
+        and is_deleted = 0
+    </select>
+
+    <select id="findAllByPage" resultType="com.losgai.cs.manager.entity.Student">
+        select <include refid="col"/>
+        from student
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%' )
+            </if>
+
+            <if test="createTimeBegin != null and createTimeBegin != ''">
+                and create_time &gt;=
+                #{createTimeBegin}
+            </if>
+
+            <if test="createTimeEnd != null and createTimeEnd != ''">
+                and create_time &lt;=
+                #{createTimeEnd}
+            </if>
+            and is_deleted = 0
+        </where>
+        order by create_time desc
+    </select>
+
+    <!--获取平均分前十学生的姓名和平均分-->
+    <select id="getTopTenStudents" resultType="com.losgai.cs.manager.entity.dto.StudentGradeDto">
+        SELECT s.name,ROUND(AVG(cs.grade),2) AS avgGrade
+        FROM student s
+        INNER JOIN course_student cs
+        WHERE s.id = cs.student_id
+        AND s.is_deleted = 0
+        AND cs.is_deleted = 0
+        GROUP BY cs.student_id
+        ORDER BY AVG(cs.grade) DESC
+        LIMIT 10
+    </select>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into student(name,
+                           password,
+                           avatar,
+                           sex,
+                           college,
+                           major,
+                           student_class,
+                           create_time,
+                           update_time,
+                           is_deleted)
+        values (#{name},
+                #{password},
+                #{avatar},
+                #{sex},
+                #{college},
+                #{major},
+                #{studentClass},
+                now(),
+                now(),
+                0)
+    </insert>
+
+    <update id="update">
+        update student set
+        <if test="name != null and name!=''">
+            name =#{name},
+        </if>
+        <if test="password != null and password!=''" >
+            password = #{password},
+        </if>
+        <if test="avatar != null and avatar!=''">
+            avatar = #{avatar},
+        </if>
+        <if test="sex != null">
+            sex = #{sex},
+        </if>
+        <if test="college != null and college!=''">
+            college= #{college},
+        </if>
+        <if test="major != null and major!=''">
+            major= #{major},
+        </if>
+        <if test="studentClass != null and studentClass!=''">
+            student_class= #{studentClass},
+        </if>
+        update_time = now()
+        where id = #{id}
+        and is_deleted = 0
+    </update>
+
+    <update id="deleteById">
+        update student set is_deleted = 1, update_time = now() where id = #{dataId}
+    </update>
+
+</mapper>

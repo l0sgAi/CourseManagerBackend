@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--xml方式写sql语句,namespace为mapper接口类的全限定名，这样实现对应-->
+<mapper namespace="com.losgai.cs.manager.mapper.TeacherCourseMapper">
+
+    <sql id="courseCol">
+        id,name,credit,intro,course_time,course_location,num_limit,num,report,create_time,update_time,is_deleted
+    </sql>
+
+    <!--教师拥有的课程分页查询-->
+    <select id="findByPage" resultType="com.losgai.cs.manager.entity.Course">
+        SELECT c.*
+        FROM course c
+        INNER JOIN course_teacher ct
+        <where>
+            <if test="courseDataDto.name != null and courseDataDto.name != ''">
+                AND c.name like concat('%', #{courseDataDto.name}, '%' )
+            </if>
+
+            <if test="courseDataDto.createTimeBegin != null and courseDataDto.createTimeBegin != ''">
+                AND c.create_time &gt;=
+                #{courseDataDto.createTimeBegin}
+            </if>
+
+            <if test="courseDataDto.createTimeEnd != null and courseDataDto.createTimeEnd != ''">
+                AND c.create_time &lt;=
+                #{courseDataDto.createTimeEnd}
+            </if>
+            <if test="id != null">
+                AND ct.teacher_id = #{id}
+            </if>
+            AND c.is_deleted = 0
+            AND ct.is_deleted = 0
+            AND c.id = ct.course_id
+        </where>
+        GROUP BY c.id
+        ORDER BY c.id
+    </select>
+
+
+</mapper>

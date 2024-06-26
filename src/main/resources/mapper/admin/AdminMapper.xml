@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--xml方式写sql语句,namespace为mapper接口类的全限定名，这样实现对应-->
+<mapper namespace="com.losgai.cs.manager.mapper.AdminMapper">
+
+    <resultMap id="financeMap" type="com.losgai.cs.manager.entity.Admin" autoMapping="true"/>
+
+    <sql id="col">
+        id,name,password,avatar,create_time,update_time,is_deleted
+    </sql>
+
+    <update id="updatePassword">
+        update admin_info set
+        <if test="password != null">
+            password = #{password}
+        </if>
+        where id = #{id}
+        and password = #{originalPassword}
+    </update>
+
+    <select id="selectAdminInfoByIdAndName" resultType="com.losgai.cs.manager.entity.Admin">
+        select
+        <include refid="col"/>
+        from admin_info
+        where id = #{id}
+        and name = #{name}
+        and is_deleted = 0
+    </select>
+
+
+</mapper>
