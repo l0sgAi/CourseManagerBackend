@@ -2,12 +2,17 @@ package com.losgai.cs.manager.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.losgai.cs.manager.entity.Course;
+import com.losgai.cs.manager.entity.Student;
 import com.losgai.cs.manager.entity.common.Result;
 import com.losgai.cs.manager.entity.common.ResultCodeEnum;
+import com.losgai.cs.manager.entity.dto.AssignCourseDto;
+import com.losgai.cs.manager.entity.dto.AssignGradeDto;
 import com.losgai.cs.manager.entity.dto.CourseDataDto;
 import com.losgai.cs.manager.service.TeacherCourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin/system/teacherCourse")
@@ -27,5 +32,19 @@ public class TeacherCourseController {
         //这里只查询教师拥有的的课程
         PageInfo<Course> pageInfo=teacherCourseService.findByPage(courseDataDto,current, limit,id);
         return Result.build(pageInfo, ResultCodeEnum.SUCCESS);
+    }
+
+    //查询选课的学生
+    @GetMapping("/findCourseStudent/{courseId}")
+    public Result findAll(@PathVariable("courseId") Integer courseId) {
+        List<Student> courseStudentList = teacherCourseService.findCourseStudent(courseId);
+        return Result.build(courseStudentList, ResultCodeEnum.SUCCESS);
+    }
+
+    //教师管理：学生打分
+    @PostMapping("/doAssign")
+    public Result doAssign(@RequestBody AssignGradeDto assignGradeDto) {
+        teacherCourseService.doAssign(assignGradeDto);
+        return Result.build(null, ResultCodeEnum.SUCCESS);
     }
 }

@@ -82,6 +82,5 @@ public class TeacherServiceImpl implements TeacherService {
         if(courseIds != null && !courseIds.isEmpty()){ //角色分配了菜单
             teacherMapper.doAssign(assignCourseDto);
         }
-
     }
 }

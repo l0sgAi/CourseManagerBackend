@@ -9,6 +9,22 @@
         id,name,credit,intro,course_time,course_location,num_limit,num,report,create_time,update_time,is_deleted
     </sql>
 
+    <update id="doAssign">
+        <foreach collection="studentGradeList" item="studentGrade" separator=";">
+            UPDATE course_student
+            <set>
+                <if test="studentGrade.grade != null">
+                    grade = #{studentGrade.grade},
+                </if>
+                <!-- 添加一个始终为真的条件，以确保至少有一个字段被更新 -->
+                is_deleted = is_deleted
+            </set>
+            WHERE course_id = #{courseId}
+            AND student_id = #{studentGrade.id}
+            AND is_deleted = 0
+        </foreach>
+    </update>
+
     <!--教师拥有的课程分页查询-->
     <select id="findByPage" resultType="com.losgai.cs.manager.entity.Course">
         SELECT c.*
@@ -16,7 +32,10 @@
         INNER JOIN course_teacher ct
         <where>
             <if test="courseDataDto.name != null and courseDataDto.name != ''">
-                AND c.name like concat('%', #{courseDataDto.name}, '%' )
+                AND c.name like concat('%',
+                #{courseDataDto.name},
+                '%'
+                )
             </if>
 
             <if test="courseDataDto.createTimeBegin != null and courseDataDto.createTimeBegin != ''">
@@ -29,7 +48,8 @@
                 #{courseDataDto.createTimeEnd}
             </if>
             <if test="id != null">
-                AND ct.teacher_id = #{id}
+                AND ct.teacher_id =
+                #{id}
             </if>
             AND c.is_deleted = 0
             AND ct.is_deleted = 0
@@ -39,5 +59,15 @@
         ORDER BY c.id
     </select>
 
+    <select id="findCourseStudents" resultType="com.losgai.cs.manager.entity.Student">
+        SELECT s.*, cs.grade AS grade
+        FROM student s
+                 INNER JOIN course_student cs
+                            ON s.id = cs.student_id
+        WHERE cs.course_id = #{courseId}
+          AND cs.is_deleted = 0
+          AND s.is_deleted = 0
+        ORDER BY cs.create_time DESC
+    </select>
 
 </mapper>

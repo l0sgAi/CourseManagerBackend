@@ -7,7 +7,7 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
     #TODO 将192.168.200.132修改成自己的ip
-    url: jdbc:mysql://192.168.200.132:3306/CSM_DB?characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8&useAffectedRows=true
+    url: jdbc:mysql://192.168.200.132:3306/CSM_DB?characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8&useAffectedRows=true&allowMultiQueries=true
     username: root
     password: 123456
   #Redis配置
