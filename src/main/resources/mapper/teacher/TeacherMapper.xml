@@ -80,9 +80,15 @@
         <if test="title != null and title!=''">
             title= #{title},
         </if>
-        email = #{email},
-        phone = #{phone},
-        intro = #{intro},
+        <if test="email != null and email!=''">
+            email = #{email},
+        </if>
+        <if test="phone != null and phone!=''">
+            phone = #{phone},
+        </if>
+        <if test="intro != null and intro!=''">
+            intro = #{intro},
+        </if>
         update_time = now()
         where id = #{id}
         and is_deleted = 0

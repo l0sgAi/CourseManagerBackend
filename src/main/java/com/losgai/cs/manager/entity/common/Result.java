@@ -3,7 +3,6 @@ package com.losgai.cs.manager.entity.common;
 import lombok.Data;
 
 @Data
-//实体类添加 OpenAPI 或 Swagger 文档的注解，它的作用是提供关于实体类的描述信息。
 public class Result<T> {
 
     //返回码
